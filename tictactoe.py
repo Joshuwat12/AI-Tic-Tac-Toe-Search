@@ -30,14 +30,30 @@ def player_turn(board):
     """
     Returns player who has the next turn on a board.
     """
-    raise NotImplementedError
+    xs = 0
+    os = 0
+    for col in board:
+        for row in col:
+            if row == X:
+                xs += 1
+            elif row == O:
+                os += 1
+
+    if xs > os:
+        return O
+    return X
 
 
 def actions(board):
     """
     Returns set of all possible actions (i, j) available on the board.
     """
-    raise NotImplementedError
+    actions = []
+    for i in range(len(board)):
+        for j in range(len(board[i])):
+            if board[i][j] == EMPTY:
+                actions.append((i, j))
+    return actions
 
 
 def result(board, action):
@@ -58,14 +74,14 @@ def terminal(board):
     """
     Returns True if game is over, False otherwise.
     """
-    raise NotImplementedError
+    return utility(board) != 0
 
 
 def utility(board):
     """
     Returns 1 if X has won the game, -1 if O has won, 0 otherwise.
     """
-    raise NotImplementedError
+    return player_num(winner(board))
 
 
 def minimax(board):
