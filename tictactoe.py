@@ -22,10 +22,11 @@ def player_flip(player):
     """
     Flips the binary turn_player variable
     """
+    global turn_player
     turn_player = not turn_player
 
 
-def player(board):
+def player():
     """
     Returns player who has the next turn on a board.
     """
@@ -49,7 +50,12 @@ def result(board, action):
     """
     Returns the board that results from making move (i, j) on the board.
     """
-    raise NotImplementedError
+    global turn_player
+    if turn_player:
+        board[action[0]][action[1]] = O
+    else:
+        board[action[0]][action[1]] = X
+    return board
 
 
 def winner(board):
@@ -70,7 +76,12 @@ def utility(board):
     """
     Returns 1 if X has won the game, -1 if O has won, 0 otherwise.
     """
-    return player_num(winner(board))
+    p = winner(board)
+    if p == "X":
+        return 1
+    if p == "O":
+        return -1
+    return 0
 
 
 def minimax(board):
