@@ -7,7 +7,7 @@ import math
 X = "X"
 O = "O"
 EMPTY = None
-
+turn_player = False
 
 def initial_state():
     """
@@ -18,30 +18,18 @@ def initial_state():
             [EMPTY, EMPTY, EMPTY]]
 
 
-def player_num(player):
-  if player == "X":
-    return 1
-  if player == "O":
-    return -1
-  return 0
+def player_flip(player):
+    """
+    Flips the binary turn_player variable
+    """
+    turn_player = not turn_player
 
 
-def player_turn(board):
+def player(board):
     """
     Returns player who has the next turn on a board.
     """
-    xs = 0
-    os = 0
-    for col in board:
-        for row in col:
-            if row == X:
-                xs += 1
-            elif row == O:
-                os += 1
-
-    if xs > os:
-        return O
-    return X
+    return (not turn_player)
 
 
 def actions(board):
@@ -49,6 +37,7 @@ def actions(board):
     Returns set of all possible actions (i, j) available on the board.
     """
     actions = []
+    # Generate all possible moves
     for i in range(len(board)):
         for j in range(len(board[i])):
             if board[i][j] == EMPTY:
