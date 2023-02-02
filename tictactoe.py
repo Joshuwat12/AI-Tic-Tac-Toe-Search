@@ -18,7 +18,15 @@ def initial_state():
             [EMPTY, EMPTY, EMPTY]]
 
 
-def player(board):
+def player_num(player):
+  if player == "X":
+    return 1
+  if player == "O":
+    return -1
+  return 0
+
+
+def player_turn(board):
     """
     Returns player who has the next turn on a board.
     """
