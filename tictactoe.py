@@ -7,7 +7,7 @@ import math
 X = "X"
 O = "O"
 EMPTY = None
-turn_player = False
+turnPlayer = False
 
 def initial_state():
     """
@@ -18,19 +18,18 @@ def initial_state():
             [EMPTY, EMPTY, EMPTY]]
 
 
-def player_flip(player):
-    """
-    Flips the binary turn_player variable
-    """
-    global turn_player
-    turn_player = not turn_player
-
-
-def player():
+def player_turn(board):
     """
     Returns player who has the next turn on a board.
+    False is X's turn; True is O's turn.
     """
-    return (not turn_player)
+    return turnPlayer
+
+def player_flip():
+    """
+    Void function. Flips the binary turnPlayer variable.
+    """
+    turnPlayer = not turnPlayer
 
 
 def actions(board):
@@ -41,52 +40,84 @@ def actions(board):
     # Generate all possible moves
     for i in range(len(board)):
         for j in range(len(board[i])):
+            # Append all viable moves as tuples
             if board[i][j] == EMPTY:
                 actions.append((i, j))
     return actions
-
 
 def result(board, action):
     """
     Returns the board that results from making move (i, j) on the board.
     """
-    global turn_player
-    if turn_player:
+    # If turn_player is True, it is O's turn, else it is X's.
+    if turnPlayer:
         board[action[0]][action[1]] = O
     else:
         board[action[0]][action[1]] = X
     return board
 
 
-def constant(l):
+def constant(checkList):
     """
     Returns True if all items in the list are the same and not EMPTY,
-    else False otherwise.
+    else returns False.
     """
-    for value in l:
-        if value == EMPTY or value != l[0]:
+    # We proceed by assuming the list items are the same and not EMPTY
+    for value in checkList:
+        # Check for contradiction
+        if value == EMPTY or value != checkList[0]:
             return False
     return True
+
+def check_rows(board):
+    """
+    Returns True if all items in any row are the same and not EMPTY,
+    else returns False.
+    """
+    # Iterate through each row
+    for row in board:
+        if constant(row):
+            return True
+    # No winning row
+    return False
+
+def check_columns(board):
+    """
+    Returns True if all items in any column are the same and not EMPTY,
+    else returns False.
+    """
+    # Iterate through each column
+    for colNum in range(len(board)):
+        # Build columns with array generation
+        column = [row[colNum] for row in board]
+        if constant(column):
+            return True
+    # No winning column
+    return False
 
 def check_diagonals(board):
     """
     Returns True if the diagonals are the same and not EMPTY,
     else returns False.
     """
+    # Establish the center of the board
+    center = board[1][1]
     if center == EMPTY:
         return False
-    center = board[1][1]
+    # Check the diagonals
     if check_diagonals_helper(board, 0, 2, center):
         return True
     elif check_diagonals_helper(board, 2, 0, center):
         return True
+    # No winning diagonal
     return False
 
 def check_diagonals_helper(board, x, y, center):
     """
-    Helper function for check diagonals. Returns true if the diagonals
+    Helper function for check_diagonals. Returns true if the diagonals
     are the same and not empty, else returns False.
     """
+    # Compare the diagonals to the center
     if board[x][0] == center:
             if board[y][2] == center:
                 return True
@@ -96,43 +127,93 @@ def winner(board):
     """
     Returns the winner of the game, if there is one.
     """
-    #Checks the rows
-    for row in range(len(board)):
-        if constant(board[row]):
-            return board[row][0]
-    #Checks the columns
-    for col in range(len(board[0])):
-        if constant([n[col] for n in board]):
-            return board[0][col]
-    
-    #Checks the diagonals
-    winState = check_diagonals(board)
-    #TODO: Check if winState
-    #TODO: Return which player, if either, wins
-
+    # Check if there is a winner
+    winState = (check_rows(board) or
+                check_columns(board) or
+                check_diagonals(board))
+    # Determine who the winner is
+    winnerNum = (utility(board, winState))
+    if not winnerNum:
+        return None
+    if winnerNum == -1:
+        return O
+    return X
 
 
 def terminal(board):
     """
     Returns True if game is over, False otherwise.
     """
-    return utility(board) != 0
+    # Check if a valid move exists
+    for row in board:
+        for item in row:
+            if item == EMPTY:
+                return False
+    # No valid moves exist
+    return True
 
 
-def utility(board):
+def utility(board, winState):
     """
     Returns 1 if X has won the game, -1 if O has won, 0 otherwise.
     """
-    p = winner(board)
-    if p == "X":
-        return 1
-    if p == "O":
-        return -1
+    if winState:
+        # If O has won, return -1; else, return 1
+        if turnPlayer:
+            return -1
+        else:
+            return 1
+    # Nobody has won
     return 0
 
+
+def max_value(board):
+    if terminal(board):
+        return winner(board)
+    else:
+        value = -math.inf
+        for action in actions(board):
+            value = max(value,min_value(result(board,action)))
+        return value
+
+def min_value(board):
+    if terminal(board):
+        return winner(board)
+    else:
+        value = math.inf
+        for action in actions(board):
+            value = min(value,max_value(result(board,action)))
+        return value 
 
 def minimax(board):
     """
     Returns the optimal action for the current player on the board.
     """
-    raise NotImplementedError
+    if terminal(board):
+        return None
+    else:
+        if player_turn(board) == X:
+            max_eval = -math.inf
+
+            for action in actions(board):
+                next_eval = min_value(result(board, action))
+                
+                max_eval = max(max_eval, next_eval)
+                if max_eval == max_value(board):
+                    return action
+
+        else:
+            min_eval = math.inf
+
+            for action in actions(board):
+                next_eval = max_value(result(board, action))
+                
+                min_eval = min(min_eval, next_eval)
+                if min_eval == min_value(board):
+                    return action
+            
+#Functions max_value, min_value, minimax inspired by what others have done and shared on the internet.
+#minimax is attempting to find either the best way for current player, or the least favorable for the other, using the value functions.
+#The max() function returns the largest of the input values.
+#The min() function returns the smallest of the input values.
+# - John
