@@ -7,6 +7,7 @@ import math
 X = "X"
 O = "O"
 EMPTY = None
+global turnPlayer
 turnPlayer = False
 
 def initial_state():
@@ -18,18 +19,13 @@ def initial_state():
             [EMPTY, EMPTY, EMPTY]]
 
 
-def player_turn(board):
+def player(board):
     """
     Returns player who has the next turn on a board.
     False is X's turn; True is O's turn.
     """
+    global turnPlayer
     return turnPlayer
-
-def player_flip():
-    """
-    Void function. Flips the binary turnPlayer variable.
-    """
-    turnPlayer = not turnPlayer
 
 
 def actions(board):
@@ -50,6 +46,9 @@ def result(board, action):
     Returns the board that results from making move (i, j) on the board.
     """
     # If turn_player is True, it is O's turn, else it is X's.
+    print(turnPlayer, action)
+    if action == None:
+        return board
     if turnPlayer:
         board[action[0]][action[1]] = O
     else:
@@ -144,14 +143,7 @@ def terminal(board):
     """
     Returns True if game is over, False otherwise.
     """
-    # Check if a valid move exists
-    for row in board:
-        for item in row:
-            if item == EMPTY:
-                return False
-    # No valid moves exist
-    return True
-
+    return winner(board) != None
 
 def utility(board, winState):
     """
@@ -166,6 +158,10 @@ def utility(board, winState):
     # Nobody has won
     return 0
 
+def minimax_bandage(x_or_o):
+    if x_or_o == X:
+        return float(1)
+    return float(-1)
 
 def max_value(board):
     if terminal(board):
@@ -173,7 +169,7 @@ def max_value(board):
     else:
         value = -math.inf
         for action in actions(board):
-            value = max(value,min_value(result(board,action)))
+            value = max(value,minimax_bandage(min_value(result(board,action))))
         return value
 
 def min_value(board):
@@ -182,7 +178,7 @@ def min_value(board):
     else:
         value = math.inf
         for action in actions(board):
-            value = min(value,max_value(result(board,action)))
+            value = min(value,minimax_bandage(max_value(result(board,action))))
         return value 
 
 def minimax(board):
@@ -190,26 +186,30 @@ def minimax(board):
     Returns the optimal action for the current player on the board.
     """
     if terminal(board):
-        return None
-    else:
-        if player_turn(board) == X:
+        print('why does this exist')
+        pass
+        #return None
+    if True:
+        print('this is fun')
+        if turnPlayer:
             max_eval = -math.inf
 
             for action in actions(board):
-                next_eval = min_value(result(board, action))
+                next_eval = minimax_bandage(min_value(result(board, action)))
                 
                 max_eval = max(max_eval, next_eval)
                 if max_eval == max_value(board):
+                    print('before end action')
                     return action
 
         else:
             min_eval = math.inf
-
             for action in actions(board):
-                next_eval = max_value(result(board, action))
-                
+                next_eval = minimax_bandage(max_value(result(board, action)))
+            
                 min_eval = min(min_eval, next_eval)
                 if min_eval == min_value(board):
+                    print('before end action')
                     return action
             
 #Functions max_value, min_value, minimax inspired by what others have done and shared on the internet.

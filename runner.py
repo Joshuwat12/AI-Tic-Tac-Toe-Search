@@ -65,7 +65,6 @@ while True:
                 user = ttt.O
 
     else:
-
         # Draw game board
         tile_size = 80
         tile_origin = (width / 2 - (1.5 * tile_size),
@@ -90,7 +89,7 @@ while True:
             tiles.append(row)
 
         game_over = ttt.terminal(board)
-        player = ttt.player_turn(board)
+        player = ttt.player(board)
 
         # Show title
         if game_over:
@@ -112,7 +111,10 @@ while True:
         if user != player and not game_over:
             if ai_turn:
                 time.sleep(0.5)
+                print("Who ya gonna call?")
                 move = ttt.minimax(board)
+                print(move)
+                print("Ghostbusters!")
                 board = ttt.result(board, move)
                 ai_turn = False
             else:
@@ -140,7 +142,9 @@ while True:
                 if againButton.collidepoint(mouse):
                     time.sleep(0.2)
                     user = None
+                    print(board)
                     board = ttt.initial_state()
+                    print(board)
                     ai_turn = False
 
     pygame.display.flip()
