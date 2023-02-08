@@ -58,11 +58,58 @@ def result(board, action):
     return board
 
 
+def constant(l):
+    """
+    Returns True if all items in the list are the same and not EMPTY,
+    else False otherwise.
+    """
+    for value in l:
+        if value == EMPTY or value != l[0]:
+            return False
+    return True
+
+def check_diagonals(board):
+    """
+    Returns True if the diagonals are the same and not EMPTY,
+    else returns False.
+    """
+    if center == EMPTY:
+        return False
+    center = board[1][1]
+    if check_diagonals_helper(board, 0, 2, center):
+        return True
+    elif check_diagonals_helper(board, 2, 0, center):
+        return True
+    return False
+
+def check_diagonals_helper(board, x, y, center):
+    """
+    Helper function for check diagonals. Returns true if the diagonals
+    are the same and not empty, else returns False.
+    """
+    if board[x][0] == center:
+            if board[y][2] == center:
+                return True
+    return False
+
 def winner(board):
     """
     Returns the winner of the game, if there is one.
     """
-    raise NotImplementedError
+    #Checks the rows
+    for row in range(len(board)):
+        if constant(board[row]):
+            return board[row][0]
+    #Checks the columns
+    for col in range(len(board[0])):
+        if constant([n[col] for n in board]):
+            return board[0][col]
+    
+    #Checks the diagonals
+    winState = check_diagonals(board)
+    #TODO: Check if winState
+    #TODO: Return which player, if either, wins
+
 
 
 def terminal(board):
