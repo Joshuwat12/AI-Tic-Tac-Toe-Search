@@ -2,8 +2,6 @@
 Tic Tac Toe Player
 """
 
-import math
-
 X = "X"
 O = "O"
 EMPTY = None
@@ -22,10 +20,12 @@ def initial_state():
 def player(board):
     """
     Returns player who has the next turn on a board.
-    False is X's turn; True is O's turn.
     """
     global turnPlayer
-    return turnPlayer
+    if turnPlayer:
+        return O
+    else:
+        return X
 
 
 def actions(board):
@@ -167,7 +167,7 @@ def max_value(board):
     if terminal(board):
         return winner(board)
     else:
-        value = -math.inf
+        value = -2
         for action in actions(board):
             value = max(value,minimax_bandage(min_value(result(board,action))))
         return value
@@ -176,7 +176,7 @@ def min_value(board):
     if terminal(board):
         return winner(board)
     else:
-        value = math.inf
+        value = 2
         for action in actions(board):
             value = min(value,minimax_bandage(max_value(result(board,action))))
         return value 
@@ -185,6 +185,7 @@ def minimax(board):
     """
     Returns the optimal action for the current player on the board.
     """
+    global turnPlayer
     if terminal(board):
         print('why does this exist')
         pass
@@ -192,7 +193,7 @@ def minimax(board):
     if True:
         print('this is fun')
         if turnPlayer:
-            max_eval = -math.inf
+            max_eval = 2
 
             for action in actions(board):
                 next_eval = minimax_bandage(min_value(result(board, action)))
@@ -200,16 +201,18 @@ def minimax(board):
                 max_eval = max(max_eval, next_eval)
                 if max_eval == max_value(board):
                     print('before end action')
+                    turnPlayer = not turnPlayer
                     return action
 
         else:
-            min_eval = math.inf
+            min_eval = -2
             for action in actions(board):
                 next_eval = minimax_bandage(max_value(result(board, action)))
             
                 min_eval = min(min_eval, next_eval)
                 if min_eval == min_value(board):
                     print('before end action')
+                    turnPlayer = not turnPlayer
                     return action
             
 #Functions max_value, min_value, minimax inspired by what others have done and shared on the internet.
