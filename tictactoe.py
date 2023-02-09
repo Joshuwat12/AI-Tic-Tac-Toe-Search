@@ -2,11 +2,11 @@
 Tic Tac Toe Player
 """
 
+from copy import deepcopy
+
 X = "X"
 O = "O"
 EMPTY = None
-global turnPlayer
-turnPlayer = False
 
 def initial_state():
     """
@@ -21,11 +21,15 @@ def player(board):
     """
     Returns player who has the next turn on a board.
     """
-    global turnPlayer
-    if turnPlayer:
+    empties = 0
+    for i in range(len(board)):
+        for j in range(len(board[i])):
+            if board[i][j] == EMPTY:
+                empties += 1
+    
+    if empties % 2 == 0:
         return O
-    else:
-        return X
+    return X
 
 
 def actions(board):
@@ -46,10 +50,7 @@ def result(board, action):
     Returns the board that results from making move (i, j) on the board.
     """
     # If turn_player is True, it is O's turn, else it is X's.
-    print(turnPlayer, action)
-    if action == None:
-        return board
-    if turnPlayer:
+    if player(board) == O:
         board[action[0]][action[1]] = O
     else:
         board[action[0]][action[1]] = X
@@ -126,18 +127,13 @@ def winner(board):
     """
     Returns the winner of the game, if there is one.
     """
-    # Check if there is a winner
-    winState = (check_rows(board) or
-                check_columns(board) or
-                check_diagonals(board))
     # Determine who the winner is
-    winnerNum = (utility(board, winState))
+    winnerNum = (utility(board))
     if not winnerNum:
         return None
     if winnerNum == -1:
-        return O
-    return X
-
+        return X
+    return O
 
 def terminal(board):
     """
@@ -145,78 +141,65 @@ def terminal(board):
     """
     return winner(board) != None
 
-def utility(board, winState):
+def utility(board):
     """
     Returns 1 if X has won the game, -1 if O has won, 0 otherwise.
     """
+    winState = (check_rows(board) or
+                check_columns(board) or
+                check_diagonals(board))
     if winState:
         # If O has won, return -1; else, return 1
-        if turnPlayer:
+        if player(board) == X:
             return -1
-        else:
-            return 1
+        return 1
     # Nobody has won
     return 0
 
-def minimax_bandage(x_or_o):
-    if x_or_o == X:
-        return float(1)
-    return float(-1)
-
 def max_value(board):
-    if terminal(board):
-        return winner(board)
-    else:
-        value = -2
-        for action in actions(board):
-            value = max(value,minimax_bandage(min_value(result(board,action))))
-        return value
+    deepBoy = deepcopy(board)
+    if terminal(deepBoy):
+        return (utility(deepBoy), None)
+    wantedAction = None
+    v = -2
+    for action in actions(deepBoy):
+        print("Max Action", action)
+        queryV = min_value(result(deepBoy, action))[0]
+        if queryV > v:
+            v = queryV
+            wantedAction = action
+    return (v, wantedAction)
 
 def min_value(board):
-    if terminal(board):
-        return winner(board)
-    else:
-        value = 2
-        for action in actions(board):
-            value = min(value,minimax_bandage(max_value(result(board,action))))
-        return value 
+    deepBoy = deepcopy(board)
+    if terminal(deepBoy):
+        return (utility(deepBoy), None)
+    wantedAction = None
+    v = 2
+    for action in actions(deepBoy):
+        print("Min Action", action)
+        queryV = max_value(result(deepBoy, action))[0]
+        if queryV < v:
+            v = queryV
+            wantedAction = action
+    
+    return (v, wantedAction)
 
 def minimax(board):
     """
     Returns the optimal action for the current player on the board.
     """
-    global turnPlayer
-    if terminal(board):
-        print('why does this exist')
-        pass
-        #return None
-    if True:
-        print('this is fun')
-        if turnPlayer:
-            max_eval = 2
-
-            for action in actions(board):
-                next_eval = minimax_bandage(min_value(result(board, action)))
-                
-                max_eval = max(max_eval, next_eval)
-                if max_eval == max_value(board):
-                    print('before end action')
-                    turnPlayer = not turnPlayer
-                    return action
-
-        else:
-            min_eval = -2
-            for action in actions(board):
-                next_eval = minimax_bandage(max_value(result(board, action)))
-            
-                min_eval = min(min_eval, next_eval)
-                if min_eval == min_value(board):
-                    print('before end action')
-                    turnPlayer = not turnPlayer
-                    return action
-            
-#Functions max_value, min_value, minimax inspired by what others have done and shared on the internet.
-#minimax is attempting to find either the best way for current player, or the least favorable for the other, using the value functions.
-#The max() function returns the largest of the input values.
-#The min() function returns the smallest of the input values.
-# - John
+    # The Base Case
+    freeSpace = True
+    for i in range(len(board)):
+        for j in range(len(board)):
+            if board[i][j] != EMPTY:
+                freeSpace = False
+                break
+    if freeSpace:
+        return (1, 1)
+    
+    # The Real Minimax
+    if player(board) == X:
+        return max_value(board)[1]
+    return min_value(board)[1]
